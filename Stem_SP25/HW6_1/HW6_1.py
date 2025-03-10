@@ -10,13 +10,13 @@ def main():
     """
     print("Network 1:")
     Net= ResistorNetwork()  #Instantiate a ResistorNetwork object
-    Net.LoadNetwork("ResistorNetwork.txt") #call the function from Net that builds the resistor network from a text file
-    IVals=Net.AnalyzeCircuit()
+    Net.BuildNetworkFromFile("ResistorNetwork.txt")  # Build the network from the file
+    IVals=Net.AnalyzeCircuit() # Solve for unknown currents
 
     print("\nNetwork 2:")
     Net_2 = ResistorNetwork_2()  #Instantiate a ResistorNetwork_2 object
-    Net_2.LoadNetwork("ResistorNetwork_2.txt") #call the function from Net that builds the resistor network from a text file
-    IVals_2=Net_2.AnalyzeCircuit()
+    Net_2.BuildNetworkFromFile("ResistorNetwork.txt")  # Build the network from the file
+    IVals_2=Net_2.AnalyzeCircuit() # Solve for unknown currents
 # endregion
 
 # region function calls

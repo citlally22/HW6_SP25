@@ -1,7 +1,7 @@
 #region classes
 class Resistor():
     #region constructor
-    def __init__(self, R=1.0, i=0.0, name=""):
+    def __init__(self, R=1.0, i=0.0, name="ab"):
         """
         Defines a resistor to have a self.Resistance, self.Current, and self.Name
         :param R: resistance in Ohm (float)
@@ -9,10 +9,10 @@ class Resistor():
         :param name: name of resistor by alphabetically ordered pair of node names
         """
         #region attributes
-        #Self.Resistance = R # Assign resistance value
-        #Self.Current = i # Assign current value
-        #Self.V = self.DeltaV() # Calculate voltage drop
-        #Self.Name = name #Assign resistor name
+        self.Resistance = R # Assign resistance value
+        self.Current = i # Assign current value
+        self.V = self.DeltaV() # Calculate voltage drop
+        self.Name = name #Assign resistor name
         #endregion
     #endregion
 

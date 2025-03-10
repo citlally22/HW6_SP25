@@ -46,8 +46,8 @@ class steam():
         #3. find all unknown thermodynamic properties by interpolation from appropriate steam table
 
         #read in the thermodynamic data from files
-        ts, ps, hfs, hgs, sfs, sgs, vfs, vgs= #$JES MISSING CODE HERE$# #use np.loadtxt to read the saturated properties
-        tcol, hcol, scol, pcol = #$JES MISSING CODE HERE$# #use np.loadtxt to read the superheated properties
+        ts, ps, hfs, hgs, sfs, sgs, vfs, vgs= ts, ps, hfs, hgs, sfs, sgs, vfs, vgs = np.loadtxt("steam_table.txt", unpack=True)  #use np.loadtxt to read the saturated properties
+        tcol, hcol, scol, pcol = ts, ps, hfs, hgs, sfs, sgs, vfs, vgs = np.loadtxt("steam_table.txt", unpack=True) #use np.loadtxt to read the superheated properties
 
         R=8.314/(18/1000) #ideal gas constant for water [J/(mol K)]/[kg/mol]
         Pbar=self.p/100 #pressure in bar - 1bar=100kPa roughly
