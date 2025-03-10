@@ -31,7 +31,8 @@ class steam():
         self.s = s #entropy - kj/(kg*K)
         self.name = name #a useful identifier
         self.region = None #'superheated' or 'saturated' or 'two-phase'
-        if T==None and x==None and v==None and h==None and s==None: return
+        if T==None and x==None and v==None and h==None and s==None:
+            return
         else: self.calc()
 
     def calc(self):
@@ -46,61 +47,71 @@ class steam():
         #3. find all unknown thermodynamic properties by interpolation from appropriate steam table
 
         #read in the thermodynamic data from files
-        ts, ps, hfs, hgs, sfs, sgs, vfs, vgs= ts, ps, hfs, hgs, sfs, sgs, vfs, vgs = np.loadtxt("steam_table.txt", unpack=True)  #use np.loadtxt to read the saturated properties
-        tcol, hcol, scol, pcol = ts, ps, hfs, hgs, sfs, sgs, vfs, vgs = np.loadtxt("steam_table.txt", unpack=True) #use np.loadtxt to read the superheated properties
-
+        ts, ps, hfs, hgs, sfs, sgs, vfs, vgs = np.loadtxt('sat_water_table.txt', unpack=True,skiprows=1)  # Saturated properties
+        tcol, hcol, scol, pcol = np.loadtxt('superheated_water_table.txt', unpack=True,skiprows=1)  # Superheated properties
         R=8.314/(18/1000) #ideal gas constant for water [J/(mol K)]/[kg/mol]
         Pbar=self.p/100 #pressure in bar - 1bar=100kPa roughly
 
         #get saturated properties
         #note: these are local variables only.  Their scope is only in this function
-        Tsat = float(griddata((ps), ts, (Pbar)))
-        hf=float(griddata((ps),hfs,(Pbar)))
-        hg=float(griddata((ps),hgs,(Pbar)))
-        sf=float(griddata((ps),sfs,(Pbar)))
-        sg=float(griddata((ps),sgs,(Pbar)))
-        vf=float(griddata((ps),vfs,(Pbar)))
-        vg=float(griddata((ps),vgs,(Pbar)))
+        Tsat = float(griddata((ps), ts, (Pbar))) # Saturation temperature
+        hf=float(griddata((ps),hfs,(Pbar))) # Saturated liquid enthalpy
+        hg=float(griddata((ps),hgs,(Pbar))) # Saturated vapor enthalpy
+        sf=float(griddata((ps),sfs,(Pbar))) # Saturated liquid entropy
+        sg=float(griddata((ps),sgs,(Pbar))) # Saturated vapor entropy
+        vf=float(griddata((ps),vfs,(Pbar))) # Saturated liquid volume
+        vg=float(griddata((ps),vgs,(Pbar))) # Saturated vapor volume
 
-        self.hf=hf #this creates a member variable for the class that can be accessed from an object
+        self.hf = hf #this creates a member variable for the class that can be accessed from an object
 
         #region determine which second property is given
         if self.T is not None:
             if self.T>Tsat: #interpolate with griddata
                 self.region='Superheated'
-                self.h = float(griddata((ps, ts), hgs, (Pbar, self.T)))  #use griddata to interpolate with T & P the superheated table
-                self.s = float(griddata((ps, ts), sgs, (Pbar, self.T)))  #use griddata to interpolate with T & P the superheated table
-                self.x=1.0
-                TK = self.T + 273.14  # temperature conversion to Kelvin
-                self.v=R*TK/(self.p*1000)  #ideal gas approximation for volume
-        elif self.x!=None: #manual interpolation
-            self.region='Saturated'
-            self.T=Tsat
-            self.h=hf+self.x*(hg-hf)
-            self.s=sf+self.x*(sg-sf)
-            self.v=vf+self.x*(vg-vf)
-        elif self.h!=None:
-            self.x=(self.h-hf)/(hg-hf)
-            if self.x<=1.0: #manual interpolation
-                self.region='Saturated'
-                self.T=Tsat
-                self.s=sf+self.x*(sg-sf)
-                self.v=vf+self.x*(vg-vf)
-            else: #interpolate with griddata
-                self.region='Superheated'
-                self.T = Tsat  #use griddata to interpolate with h & P the superheated table
-                self.s = float(griddata((ps, ts), sgs, (Pbar, self.T)))  #use griddata to interpolate with h & P the superheated table
-        elif self.s!=None:
-            self.x=(self.s-sf)/(sg-sf)
-            if self.x<=1.0: #manual interpolation
-                self.region='Saturated'
-                self.T=Tsat
-                self.h=hf+self.x*(hg-hf)
-                self.v=vf+self.x*(vg-vf)
-            else: #interpolate with griddata
+                self.h = float(griddata((tcol, pcol), hcol, (self.T, Pbar)))  #use griddata to interpolate with T & P the superheated table
+                self.s = float(griddata((tcol, pcol), scol, (self.T, Pbar)))  #use griddata to interpolate with T & P the superheated table
+                self.x=1.0 # Superheated, so quality is 1
+                TK = self.T + 273.14  # Temperature conversion to Kelvin
+                self.v = R * TK / (self.p * 1000)  # Ideal gas approximation for specific volume
+            else:  # Saturated stea
+                self.region = 'Saturated'
+                self.x = (self.h - hf) / (hg - hf)  # Calculate quality (x) for saturated steam
+                self.x = max(0.0, min(self.x, 1.0))  # Ensure quality is between 0 and 1
+                self.T = Tsat  # Saturation temperature
+                self.h = hf + self.x * (hg - hf)  # Calculate enthalpy
+                self.s = sf + self.x * (sg - sf)  # Calculate entropy
+                self.v = vf + self.x * (vg - vf)  # Calculate specific volume
+        elif self.x is not None:  # If quality (x) is known
+            self.region = 'Saturated'
+            self.T = Tsat  # Saturation temperature
+            self.h = hf + self.x * (hg - hf)  # Calculate enthalpy
+            self.s = sf + self.x * (sg - sf)  # Calculate entropy
+            self.v = vf + self.x * (vg - vf)  # Calculate specific volume
+        elif self.h is not None:  # If enthalpy (h) is known
+            self.x = (self.h - hf) / (hg - hf)  # Calculate quality (x)
+            self.x = max(0.0, min(self.x, 1.0))  # Ensure quality is between 0 and 1
+            if self.x <= 1.0:  # Saturated steam
+                self.region = 'Saturated'
+                self.T = Tsat
+                self.s = sf + self.x * (sg - sf)
+                self.v = vf + self.x * (vg - vf)
+            else:  # Superheated steam
                 self.region = 'Superheated'
-                self.T = float(griddata((ps, hgs), ts, (Pbar, self.h)))  #use griddata to interpolate with s & P the superheated table
-                self.h = float(griddata((ps, sgs), hgs, (Pbar, self.s)))  #use griddata to interpolate with s & P the superheated table
+                self.T = float(griddata((pcol, hcol), tcol, (Pbar, self.h), method='linear'))
+                self.s = float(griddata((pcol, hcol), scol, (Pbar, self.h), method='linear'))
+        elif self.s is not None:  # If entropy (s) is known
+            self.x = (self.s - sf) / (sg - sf)  # Calculate quality (x)
+            self.x = max(0.0, min(self.x, 1.0))  # Ensure quality is between 0 and 1
+            if self.x <= 1.0:  # Saturated steam
+                self.region = 'Saturated'
+                self.T = Tsat
+                self.h = hf + self.x * (hg - hf)
+                self.v = vf + self.x * (vg - vf)
+            else:  # Superheated steam
+                self.region = 'Superheated'
+                self.T = float(griddata((pcol, scol), tcol, (Pbar, self.s), method='linear'))
+                self.h = float(griddata((pcol, scol), hcol, (Pbar, self.s), method='linear'))
+
         #endregion
 
     def print(self):
@@ -116,8 +127,10 @@ class steam():
         print('h = {:0.2f} kJ/kg'.format(self.h))
         if self.x >= 0.0:
             print('s = {:0.4f} kJ/(kg K)'.format(self.s))
-            if self.region == 'Saturated': print('v = {:0.6f} m^3/kg'.format(self.v))
-            if self.region == 'Saturated': print('x = {:0.4f}'.format(self.x))
+            if self.region == 'Saturated':
+                print('v = {:0.6f} m^3/kg'.format(self.v))
+            if self.region == 'Saturated':
+                print('x = {:0.4f}'.format(self.x))
         print()
 # endregion
 
@@ -128,9 +141,9 @@ def main():
     inlet.calc()
     inlet.print()
 
-    h1=inlet.h
-    s1=inlet.s
-    print(h1,s1,'\n')
+    h1 = inlet.h
+    s1 = inlet.s
+    print(h1, s1, '\n')
 
     outlet=steam(100, s=inlet.s, name='Turbine Exit')
     outlet.print()

@@ -36,7 +36,6 @@ class rankine():
         self.state3 = steam(self.p_low, x=0, name='Pump Inlet')
         #state 4: pump exit (p_high,s=s_pump_inlet) typically sub-cooled, but estimate as saturated liquid
         self.state4=steam(self.p_high,s=self.state3.s, name='Pump Exit')
-        self.state4.h=self.state3.h+self.state3.v*(self.p_high-self.p_low)
 
         self.turbine_work = self.state1.h - self.state2.h # calculate turbine work
         self.pump_work = self.state4.h - self.state3.h # calculate pump work
@@ -58,16 +57,20 @@ class rankine():
         self.state3.print()
         self.state4.print()
 
+
+class Rankine:
+    pass
+
+
 def main():
-    rankine1= Rankine(p_low=8, p_high=8000, name="Saturated Steam Cycle") #instantiate a rankine object to test it.
-    rankine2 = Rankine(p_low=8, p_high=8000, t_high=300, name="Superheated Steam Cycle")
+    """Creates a Rankine cycle instance and prints results."""
+    rankine1= rankine(p_low=8, p_high=8000, name="Rankine Cycle (Saturated Vapor)") #instantiate a rankine object to test it.
     #t_high is specified
     #if t_high were not specified, then x_high = 1 is assumed
-    eff1=rankine1.calc_efficiency()
-    eff2 = rankine2.calc_efficiency()
+    eff = rankine1.calc_efficiency()
     print(eff)
+    # Calculate and print efficiency
     rankine1.print_summary()
-    rankine2.print_summary()
 
 if __name__=="__main__":
     main()
