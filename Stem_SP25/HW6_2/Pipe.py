@@ -42,7 +42,7 @@ class Pipe():
         Calculate average velocity in the pipe for volumetric flow self.Q
         :return:the average velocity in m/s
         '''
-        self.vel= #$JES MISSING CODE$  # the average velocity is Q/A (be mindful of units)
+        self.vel= self.Q / self.A  # the average velocity is Q/A (be mindful of units)
         return self.vel
 
     def Re(self):
@@ -50,7 +50,9 @@ class Pipe():
         Calculate the reynolds number under current conditions.
         :return:
         '''
-        self.reynolds= #$JES MISSING CODE$ # Re=rho*V*d/mu, be sure to use V() so velocity is updated.
+        rho = 1000  # Water density in kg/m³
+        mu = 0.00089  # Dynamic viscosity of water in Ns/m²
+        self.reynolds= (rho * self.V() * self.d) / mu  # Re=rho*V*d/mu, be sure to use V() so velocity is updated.
         return self.reynolds
 
     def FrictionFactor(self):
@@ -94,7 +96,7 @@ class Pipe():
         '''
         g = 9.81  # m/s^2
         ff = self.FrictionFactor()
-        hl = #$JES MISSING CODE$ # calculate the head loss in m of water
+        hl = (ff * (self.length / self.d) * (self.V()**2)) / (2 * g) # calculate the head loss in m of water
         return hl
 
     def getFlowHeadLoss(self, s):
@@ -121,7 +123,7 @@ class Pipe():
         return self.startNode==node or self.endNode==node
 
     def printPipeFlowRate(self):
-        print('The flow in segment {} is {:0.2f} L/s'.format(self.Name(),self.Q))
+        print(f"The flow in segment {self.Name()} is {self.Q * 0.001:.5f} m³/s")
 
     def getFlowIntoNode(self, n):
         '''

@@ -21,6 +21,9 @@ class Loop():
         Calculates the net head loss as I traverse around the loop, in m of fluid.
         :return:
         '''
+        if not self.pipes:  # Ensure pipes exist
+            return 0
+
         deltaP=0 #initialize to zero
         startNode=self.pipes[0].startNode #begin at the start node of the first pipe
         for p in self.pipes:

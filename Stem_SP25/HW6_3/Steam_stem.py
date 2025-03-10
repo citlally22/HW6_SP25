@@ -68,8 +68,8 @@ class steam():
         if self.T is not None:
             if self.T>Tsat: #interpolate with griddata
                 self.region='Superheated'
-                self.h = #$JES MISSING CODE HERE$  #use griddata to interpolate with T & P the superheated table
-                self.s = #$JES MISSING CODE HERE$  #use griddata to interpolate with T & P the superheated table
+                self.h = float(griddata((ps, ts), hgs, (Pbar, self.T)))  #use griddata to interpolate with T & P the superheated table
+                self.s = float(griddata((ps, ts), sgs, (Pbar, self.T)))  #use griddata to interpolate with T & P the superheated table
                 self.x=1.0
                 TK = self.T + 273.14  # temperature conversion to Kelvin
                 self.v=R*TK/(self.p*1000)  #ideal gas approximation for volume
@@ -88,8 +88,8 @@ class steam():
                 self.v=vf+self.x*(vg-vf)
             else: #interpolate with griddata
                 self.region='Superheated'
-                self.T = #$JES MISSING CODE HERE$  #use griddata to interpolate with h & P the superheated table
-                self.s = #$JES MISSING CODE HERE$  #use griddata to interpolate with h & P the superheated table
+                self.T = Tsat  #use griddata to interpolate with h & P the superheated table
+                self.s = float(griddata((ps, ts), sgs, (Pbar, self.T)))  #use griddata to interpolate with h & P the superheated table
         elif self.s!=None:
             self.x=(self.s-sf)/(sg-sf)
             if self.x<=1.0: #manual interpolation
@@ -99,8 +99,8 @@ class steam():
                 self.v=vf+self.x*(vg-vf)
             else: #interpolate with griddata
                 self.region = 'Superheated'
-                self.T = #$JES MISSING CODE HERE$  #use griddata to interpolate with s & P the superheated table
-                self.h = #$JES MISSING CODE HERE$  #use griddata to interpolate with s & P the superheated table
+                self.T = float(griddata((ps, hgs), ts, (Pbar, self.h)))  #use griddata to interpolate with s & P the superheated table
+                self.h = float(griddata((ps, sgs), hgs, (Pbar, self.s)))  #use griddata to interpolate with s & P the superheated table
         #endregion
 
     def print(self):
